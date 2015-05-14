@@ -127,11 +127,16 @@ class ProjectPermissions(Permissions):
         return self._client.post(self._url_for(permission), params=dict(allow=False))
 
 class RepositoryPermissions(Permissions):
-    def _url_for(self):
-        return self.url().rstrip("/") + "/users"
+    def _url_for(self, for_user=True):
+        if for_user:
+            resource = 'users'
+        else:
+            resource = 'groups'
+
+        return self.url().rstrip("/") + "/" + resource
 
     @ok_or_error
-    def grant(self, user, permission):
+    def grant(self, target, permission, for_user=True):
         """
         Grant or revoke a repository permission to all users, i.e. set the
         default permission.
@@ -143,7 +148,7 @@ class RepositoryPermissions(Permissions):
 
 
         """
-        return self._client.post(self._url_for(), params=dict(name=user,
+        return self._client.put(self._url_for(for_user), params=dict(name=user,
                                                               permission=permission))
 
     @ok_or_error
